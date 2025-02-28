@@ -6,7 +6,7 @@ export const App = () => {
 	const [operand2, setOperand2] = useState('');
 	const [operator, setOperator] = useState('');
 	const [result, setResult] = useState('');
-	const [isResultOnDisply, setIsResultOnDisplay] = useState(false);
+	const [isResultOnDisplay, setIsResultOnDisplay] = useState(false);
 
 	const buttons = ['1', '2', '3', '+', '4', '5', '6', '-', '7', '8', '9', '=', '0', 'C'];
 
@@ -27,7 +27,7 @@ export const App = () => {
 			setResult('');
 			setIsResultOnDisplay(false);
 		} else if (value === '+' || value === '-') {
-			if (isResultOnDisply) {
+			if (isResultOnDisplay) {
 				setOperand1(String(result));
 				setIsResultOnDisplay(false);
 				setOperator(value);
@@ -45,12 +45,12 @@ export const App = () => {
 			}
 		} else if (value === '0') {
 			if (operand1 && operand2) {
-				setOperand2((op1) => op1 + value);
+				setOperand2((op2) => op2 + value);
 			} else if (operand1 && !operator) {
 				setOperand1((op1) => op1 + value);
 			}
 		} else {
-			if (isResultOnDisply) {
+			if (isResultOnDisplay) {
 				setResult('');
 				setIsResultOnDisplay(false);
 				setOperand1((op1) => op1 + value);
@@ -68,8 +68,8 @@ export const App = () => {
 	return (
 		<>
 			<div className={styles.calculator}>
-				<div className={`${styles.display} ${isResultOnDisply ? styles.result : ''}`}>
-					{isResultOnDisply
+				<div className={`${styles.display} ${isResultOnDisplay ? styles.result : ''}`}>
+					{isResultOnDisplay
 						? result
 						: !operand1
 							? '0'
@@ -81,7 +81,7 @@ export const App = () => {
 							key={btn}
 							className={`${styles.button} ${
 								btn === '+' || btn === '-' ? styles.operator : ''
-							} ${btn === '=' ? styles['operator-equally'] : ''} ${
+							}${btn === '=' ? styles['operator-equally'] : ''}${
 								btn === 'C' ? styles.clear : ''
 							}`}
 							onClick={() => handleButtonClick(btn)}
