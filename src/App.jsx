@@ -1,139 +1,78 @@
 import * as yup from 'yup';
-import { useState } from 'react';
 import styles from './app.module.css';
-import { useStore } from './hooks/useStore';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
-const sendData = (formData) => {
-	console.log(formData);
-};
-
-const emailChangeScheme = yup
-	.string()
-	.matches(
-		/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
-		'Некорректный Email. Email должен иметь вид test@example.com',
-	)
-	.max(50, 'Недопустимый Email. Длина не может превышать 50 символов');
-
-const passwordChangeScheme = yup
-	.string()
-	.matches(
-		/^[\w_]*$/,
-		'Некорректный пароль. Пароль может состоять из букв, цифр и нижннего подчеркивания.',
-	)
-	.min(8, 'Некорректный пароль. Минимальная длина пароля - 8 символов.');
-
-const validateAndGetErrorMessage = (scheme, value) => {
-	let errorMessage = null;
-
-	try {
-		scheme.validateSync(value, { abortEarly: false });
-	} catch ({ errors }) {
-		errorMessage = errors.join('\n');
-	}
-
-	return errorMessage;
-};
+const fieldsScheme = yup.object().shape({
+	email: yup
+		.string()
+		.matches(
+			/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+			'Некорректный Email. Email должен иметь вид test@example.com',
+		)
+		.max(50, 'Недопустимый Email. Длина не может превышать 50 символов'),
+	password: yup
+		.string()
+		.matches(
+			/^[\w_]*$/,
+			'Некорректный пароль. Пароль может состоять из букв, цифр и нижннего подчеркивания.',
+		)
+		.min(8, 'Некорректный пароль. Минимальная длина пароля - 8 символов.'),
+	repeatPassword: yup
+		.string()
+		.oneOf([yup.ref('password'), null], 'Пароли не совпадают'),
+});
 
 export const App = () => {
-	const { getState, updateState } = useStore();
-	const [emailError, setEmailError] = useState(null);
-	const [passwordError, setPasswordError] = useState(null);
-	const [repeatPasswordError, setRepeatPasswordError] = useState(null);
-	const [isBlur, setIsBlur] = useState(null);
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm({
+		defaultValues: {
+			email: '',
+			password: '',
+			repeatPassword: '',
+		},
+		resolver: yupResolver(fieldsScheme),
+	});
 
-	const { email, password, repeatPassword } = getState;
-	const currentEmail = getState().email;
+	const emailError = errors.email?.message;
+	const passwordError = errors.password?.message;
+	const repeatPasswordError = errors.repeatPassword?.message;
 
-	const onSubmit = (event) => {
-		event.preventDefault();
-		sendData(getState());
-	};
-
-	const onBlur = () => {
-		setIsBlur(false);
-	};
-
-	const onEmailChange = ({ target }) => {
-		setIsBlur(true);
-		updateState(target.name, target.value);
-
-		const error = validateAndGetErrorMessage(emailChangeScheme, target.value);
-
-		setEmailError(error);
-	};
-
-	const onPasswordChange = ({ target }) => {
-		updateState(target.name, target.value);
-
-		const error = validateAndGetErrorMessage(passwordChangeScheme, target.value);
-
-		const currentRepeatPassword = getState().repeatPassword;
-		if (currentRepeatPassword && target.value !== currentRepeatPassword) {
-			setRepeatPasswordError('Пароли не совпадают.');
-		} else {
-			setRepeatPasswordError(null);
-		}
-
-		setPasswordError(error);
-	};
-
-	const onRepeatPasswortChange = ({ target }) => {
-		updateState(target.name, target.value);
-		let error = null;
-
-		const currentPasword = getState().password;
-
-		if (target.value !== currentPasword) {
-			error = 'Пароли не совпадают.';
-		} else {
-			error = null;
-		}
-
-		setRepeatPasswordError(error);
+	const onSubmit = (formData) => {
+		console.log(formData);
 	};
 
 	return (
 		<>
-			<form onSubmit={onSubmit}>
+			<form onSubmit={handleSubmit(onSubmit)}>
 				<input
 					type="email"
 					name="email"
-					value={email}
 					placeholder="Email"
-					onChange={onEmailChange}
-					onBlur={onBlur}
+					{...register('email')}
 				/>
 				<input
 					type="password"
 					name="password"
-					value={password}
 					placeholder="Пароль"
-					onChange={onPasswordChange}
+					{...register('password')}
 				/>
 				<input
 					type="password"
 					name="repeatPassword"
-					value={repeatPassword}
 					placeholder="Повторите пароль"
-					onChange={onRepeatPasswortChange}
+					{...register('repeatPassword')}
 				/>
 				<button
 					type="submit"
-					disabled={
-						emailError !== null ||
-						passwordError !== null ||
-						repeatPasswordError !== null ||
-						getState().email.length < 1 ||
-						getState().password.length < 1 ||
-						getState().repeatPassword.length < 1
-					}
+					disabled={!!emailError || !!passwordError || !!repeatPasswordError}
 				>
 					Регистрация
 				</button>
-				{!isBlur && currentEmail.length > 0 && (
-					<div className={styles.errorLabel}>{emailError}</div>
-				)}
+				{emailError && <div className={styles.errorLabel}>{emailError}</div>}
 				{passwordError && (
 					<div className={styles.errorLabel}>{passwordError}</div>
 				)}
