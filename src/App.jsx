@@ -1,3 +1,4 @@
+import * as yup from 'yup';
 import { useState } from 'react';
 import styles from './app.module.css';
 import { useStore } from './hooks/useStore';
@@ -6,57 +7,66 @@ const sendData = (formData) => {
 	console.log(formData);
 };
 
+const emailChangeScheme = yup
+	.string()
+	.matches(
+		/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+		'Некорректный Email. Email должен иметь вид test@example.com',
+	)
+	.max(50, 'Недопустимый Email. Длина не может превышать 50 символов');
+
+const passwordChangeScheme = yup
+	.string()
+	.matches(
+		/^[\w_]*$/,
+		'Некорректный пароль. Пароль может состоять из букв, цифр и нижннего подчеркивания.',
+	)
+	.min(8, 'Некорректный пароль. Минимальная длина пароля - 8 символов.');
+
+const validateAndGetErrorMessage = (scheme, value) => {
+	let errorMessage = null;
+
+	try {
+		scheme.validateSync(value, { abortEarly: false });
+	} catch ({ errors }) {
+		errorMessage = errors.join('\n');
+	}
+
+	return errorMessage;
+};
+
 export const App = () => {
 	const { getState, updateState } = useStore();
 	const [emailError, setEmailError] = useState(null);
-	const [emailLengthError, setEmailLengthError] = useState(null);
 	const [passwordError, setPasswordError] = useState(null);
 	const [repeatPasswordError, setRepeatPasswordError] = useState(null);
 	const [isBlur, setIsBlur] = useState(null);
+
+	const { email, password, repeatPassword } = getState;
+	const currentEmail = getState().email;
 
 	const onSubmit = (event) => {
 		event.preventDefault();
 		sendData(getState());
 	};
 
-	const { email, password, repeatPassword } = getState;
-	const currentEmail = getState().email;
-
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+	const onBlur = () => {
+		setIsBlur(false);
+	};
 
 	const onEmailChange = ({ target }) => {
 		setIsBlur(true);
 		updateState(target.name, target.value);
 
-		let error = null;
-		let errorLenght = null;
-
-		if (!emailRegex.test(target.value) && target.value.length > 0) {
-			error = 'Некорректный Email. Email должен иметь вид test@example.com';
-		}
-		if (target.value.length > 50) {
-			errorLenght = 'Недопустимый Email. Длина не может превышать 50 символов';
-		}
+		const error = validateAndGetErrorMessage(emailChangeScheme, target.value);
 
 		setEmailError(error);
-		setEmailLengthError(errorLenght);
-	};
-
-	const onBlur = () => {
-		setIsBlur(false);
 	};
 
 	const onPasswordChange = ({ target }) => {
 		updateState(target.name, target.value);
 
-		let error = null;
-
-		if (!/^[\w_]*$/.test(target.value)) {
-			error =
-				'Некорректный пароль. Пароль может состоять из букв, цифр и нижннего подчеркивания.';
-		} else if (target.value.length < 8) {
-			error = 'Некорректный пароль. Минимальная длина пароля - 8 символов.';
-		}
+		const error = validateAndGetErrorMessage(passwordChangeScheme, target.value);
 
 		const currentRepeatPassword = getState().repeatPassword;
 		if (currentRepeatPassword && target.value !== currentRepeatPassword) {
@@ -112,7 +122,6 @@ export const App = () => {
 					type="submit"
 					disabled={
 						emailError !== null ||
-						emailLengthError !== null ||
 						passwordError !== null ||
 						repeatPasswordError !== null ||
 						getState().email.length < 1 ||
@@ -124,9 +133,6 @@ export const App = () => {
 				</button>
 				{!isBlur && currentEmail.length > 0 && (
 					<div className={styles.errorLabel}>{emailError}</div>
-				)}
-				{emailLengthError && (
-					<div className={styles.errorLabel}>{emailLengthError}</div>
 				)}
 				{passwordError && (
 					<div className={styles.errorLabel}>{passwordError}</div>
