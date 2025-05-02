@@ -26,7 +26,7 @@ export const gameReducer = (state = initialState, { type, payload }) => {
 			const isWinner = WIN_PATTERNS.some((pattern) =>
 				pattern.every((idx) => newField[idx] === currentPlayer),
 			);
-			const isDraw = newField.every((cell) => cell);
+			const isDraw = isWinner ? false : newField.every((cell) => cell);
 
 			return {
 				...state,
