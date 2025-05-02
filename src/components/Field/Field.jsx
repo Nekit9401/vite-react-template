@@ -10,7 +10,7 @@ export const Field = () => {
 		const unsubscribe = store.subscribe(() => {
 			setState(store.getState());
 		});
-		return unsubscribe;
+		return () => unsubscribe();
 	}, []);
 
 	const { field } = state;

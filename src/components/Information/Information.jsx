@@ -10,7 +10,7 @@ export const Information = () => {
 		const unsubscribe = store.subscribe(() => {
 			setState(store.getState());
 		});
-		return unsubscribe;
+		return () => unsubscribe();
 	}, []);
 
 	const { isDraw, isGameEnded, currentPlayer } = state;
