@@ -1,22 +1,16 @@
-import { useState, useEffect } from 'react';
-import { store } from '../../redux/store';
+import { cellClick } from '../../redux/actions/cellClick';
+import { selectField } from '../../redux/selectors';
 import { FieldLayout } from './FieldLayout';
 import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const Field = () => {
-	const [state, setState] = useState(store.getState());
+	const dispatch = useDispatch();
 
-	useEffect(() => {
-		const unsubscribe = store.subscribe(() => {
-			setState(store.getState());
-		});
-		return () => unsubscribe();
-	}, []);
-
-	const { field } = state;
+	const field = useSelector(selectField);
 
 	const handleCellClick = (idx) => {
-		store.dispatch({ type: 'CELL_CLICK', payload: idx });
+		dispatch(cellClick(idx));
 	};
 
 	return (
