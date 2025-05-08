@@ -1,26 +1,32 @@
+import { Component } from 'react';
 import { cellClick } from '../../redux/actions/cellClick';
 import { selectField } from '../../redux/selectors';
 import { FieldLayout } from './FieldLayout';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 
-export const Field = () => {
-	const dispatch = useDispatch();
-
-	const field = useSelector(selectField);
-
-	const handleCellClick = (idx) => {
-		dispatch(cellClick(idx));
+class FieldContainer extends Component {
+	handleCellClick = (idx) => {
+		this.props.cellClick(idx);
 	};
 
-	return (
-		<>
-			<FieldLayout field={field} onCellClick={handleCellClick} />
-		</>
-	);
+	render() {
+		const { field } = this.props;
+		return <FieldLayout field={field} onCellClick={this.handleCellClick} />;
+	}
+}
+
+FieldContainer.propTypes = {
+	field: PropTypes.array,
+	cellClick: PropTypes.func,
 };
 
-Field.propTypes = {
-	field: PropTypes.array,
-	onCellClick: PropTypes.func,
+const mapStateToProps = (state) => ({
+	field: selectField(state),
+});
+
+const mapDispatchToProps = {
+	cellClick,
 };
+
+export const Field = connect(mapStateToProps, mapDispatchToProps)(FieldContainer);

@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { InformationLayout } from './InformationLayout';
 import PropTypes from 'prop-types';
 import {
@@ -6,30 +6,34 @@ import {
 	selectIsDraw,
 	selectIsGameEnded,
 } from '../../redux/selectors';
+import { Component } from 'react';
 
-export const Information = () => {
-	const isDraw = useSelector(selectIsDraw);
-	const isGameEnded = useSelector(selectIsGameEnded);
-	const currentPlayer = useSelector(selectCurrentPlayer);
+class InformationContainer extends Component {
+	getStatus = () => {
+		const { isDraw, isGameEnded, currentPlayer } = this.props;
 
-	let status;
-	if (isDraw) {
-		status = 'Ничья!';
-	} else if (isGameEnded) {
-		status = `Победа: ${currentPlayer}!`;
-	} else {
-		status = `Текущий ход: ${currentPlayer}`;
+		return isDraw
+			? 'Ничья!'
+			: isGameEnded
+				? `Победа: ${currentPlayer}!`
+				: `Текущий ход: ${currentPlayer}`;
+	};
+
+	render() {
+		return <InformationLayout status={this.getStatus()} />;
 	}
+}
 
-	return (
-		<>
-			<InformationLayout status={status} />
-		</>
-	);
-};
-
-Information.propTypes = {
+InformationContainer.propTypes = {
 	currentPlayer: PropTypes.oneOf(['X', '0']),
 	isGameEnded: PropTypes.bool,
 	isDraw: PropTypes.bool,
 };
+
+const mapStateToProps = (state) => ({
+	isDraw: selectIsDraw(state),
+	isGameEnded: selectIsGameEnded(state),
+	currentPlayer: selectCurrentPlayer(state),
+});
+
+export const Information = connect(mapStateToProps)(InformationContainer);

@@ -1,9 +1,12 @@
+import { Component } from 'react';
 import styles from './Field.module.css';
 import PropTypes from 'prop-types';
 
-export const FieldLayout = ({ field, onCellClick }) => {
-	return (
-		<>
+export class FieldLayout extends Component {
+	render() {
+		const { field, onCellClick } = this.props;
+
+		return (
 			<div className={styles.field}>
 				{field.map((cell, idx) => (
 					<button
@@ -18,9 +21,9 @@ export const FieldLayout = ({ field, onCellClick }) => {
 					</button>
 				))}
 			</div>
-		</>
-	);
-};
+		);
+	}
+}
 
 FieldLayout.propTypes = {
 	field: PropTypes.array,
